@@ -1,6 +1,4 @@
 
-
-
 firebase.auth().onAuthStateChanged(async function(users) {
   
   let db = firebase.firestore()
@@ -51,7 +49,8 @@ firebase.auth().onAuthStateChanged(async function(users) {
   
   for (let i=0; i<movies.length; i++) {
     let movie = movies[i]
-    let docRef = await db.collection('watched').doc(`${movie.id}`).get()
+    // check the data base for movies watched by the signed in user
+    let docRef = await db.collection('watched').doc(`${movie.id}-${users.uid}`).get()
     let watchedMovie = docRef.data()
     let opacityClass = ''
     if (watchedMovie) {
@@ -69,7 +68,8 @@ firebase.auth().onAuthStateChanged(async function(users) {
       event.preventDefault()
       let movieElement = document.querySelector(`.movie-${movie.id}`)
       movieElement.classList.add('opacity-20')
-      await db.collection('watched').doc(`${movie.id}`).set({})
+      // assign a document ID using the movie ID and the user ID
+      await db.collection('watched').doc(`${movie.id}-${users.uid}`).set({})
     }) 
   }
 })
@@ -91,7 +91,7 @@ firebase.auth().onAuthStateChanged(async function(users) {
 //         in as <name>" along with a link to "Sign out". Ensure that a document
 //         is set in the "users" collection for each user that signs in to 
 //         your application.
-// Step 3: Setting the TMDB movie ID as the document ID on your "watched" collection
+// Step 3: [[Done]] -- Setting the TMDB movie ID as the document ID on your "watched" collection
 //         will no longer work. The document ID should now be a combination of the
 //         TMDB movie ID and the user ID indicating which user has watched. 
 //         This "composite" ID could simply be `${movieId}-${userId}`. This should 
