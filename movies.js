@@ -8,19 +8,22 @@ firebase.auth().onAuthStateChanged(async function(users) {
   let movies = json.results
   console.log(movies)
 
+  // if a user is signed in, display their name and a sign out button
   if (users) {
-    console.log(`${users.uid}`)
 
-    // Ensure the signed-in user is in the users collection
+    // Confirm the signed-in user is in the users collection
     db.collection('users').doc(users.uid).set({
       name: users.displayName,
       email: users.email
     })
 
+    // log the user ID
+    console.log(`${users.uid}`)
+
     // Sign-out button
     document.querySelector('.sign-in-or-sign-out').innerHTML = `
-    <a> ${users.displayName} is signed in |</a>
-    <button class="text-white-500 underline sign-out">Sign Out</button>
+      <a> ${users.displayName} is signed in |</a>
+      <button class="text-white-500 underline sign-out">Sign Out</button>
     `
     document.querySelector('.sign-out').addEventListener('click', function(event) {
       console.log('sign out clicked')
@@ -28,11 +31,13 @@ firebase.auth().onAuthStateChanged(async function(users) {
       document.location.href = 'movies.html'
     })
 
+    // if a user is not signed in, display the sign-in option
   } else {
+
     // Signed out
     console.log('signed out')
 
-    // Initializes FirebaseUI Auth
+    // Initialize FirebaseUI Auth
     let ui = new firebaseui.auth.AuthUI(firebase.auth())
 
     // FirebaseUI configuration
@@ -47,12 +52,16 @@ firebase.auth().onAuthStateChanged(async function(users) {
     ui.start('.sign-in-or-sign-out', authUIConfig)
   }
   
+  // loop through the list of movies and check the database to see if the user already watched
   for (let i=0; i<movies.length; i++) {
     let movie = movies[i]
-    // check the data base for movies watched by the signed in user
+
+    // check the database for movies watched by the signed in user
     let docRef = await db.collection('watched').doc(`${movie.id}-${users.uid}`).get()
     let watchedMovie = docRef.data()
     let opacityClass = ''
+    
+    // assign opacity if the movie has been watched
     if (watchedMovie) {
       opacityClass = 'opacity-20'
     }
@@ -64,6 +73,7 @@ firebase.auth().onAuthStateChanged(async function(users) {
       </div>
     `)
 
+    // if the user clicks the watched button, assign opacity and write to the database
     document.querySelector(`.movie-${movie.id}`).addEventListener('click', async function(event) {
       event.preventDefault()
       let movieElement = document.querySelector(`.movie-${movie.id}`)
